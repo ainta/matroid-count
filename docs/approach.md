@@ -56,7 +56,7 @@ $J(n-1,r-1)$, and $B$ is stable in $J(n-1,r)$ with the supersets of $A$ excluded
 Writing $i(G)$ for the number of stable sets, including the empty set, gives
 
 ```math
-I(n,r)=\sum_{[A]}\frac{(n-1)!}{|\operatorname{Aut}(A)|}
+I(n,r)=\sum_{[A]}\frac{(n-1)!}{|\mathrm{Aut}(A)|}
  i\bigl(J(n-1,r)-\Gamma^+(A)\bigr),
 \qquad \Gamma^+(A)=\{b:\exists a\in A,\ a\subset b\}.
 ```
@@ -139,7 +139,7 @@ For a partition $\mu\vdash n-1$, let
 $$z_\mu=\prod_j j^{a_j}a_j!.$$
 
 For general rank $r$, accumulate an integer moment $T_\mu$ over all
-rank-$`r`$ parents, weighting each parent by $(n-1)!/|\operatorname{Aut}(N)|$
+rank-$`r`$ parents, weighting each parent by $(n-1)!/|\mathrm{Aut}(N)|$
 and summing its invariant modular-cut counts over automorphisms of type $\mu$.
 Add the corresponding coloop contribution from rank-$`(r-1)`$ parents. Then
 
