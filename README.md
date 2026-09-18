@@ -16,6 +16,8 @@ validation checks.
 
 ## Start here
 
+- [Algorithm note (PDF)](docs/note.pdf) · [TeX source](docs/note.tex):
+  pseudocode, correctness proofs and computation results.
 - [The algorithm](docs/approach.md): the sparse-paving split, modular cuts,
   symmetry correction and why the count includes all matroids.
 - [Reproduction and monitoring](docs/reproduction.md): dependencies, commands,

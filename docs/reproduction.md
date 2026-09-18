@@ -129,6 +129,18 @@ python3 scripts/compare_catalogues.py \
 
 The comparison checks equality of the complete sets of canonical rank strings.
 
+## Build the algorithm note
+
+The [note](note.pdf) is written in a single [TeX source](note.tex). With a
+LaTeX installation providing pdfLaTeX, run from the repository root:
+
+```bash
+mkdir -p build/note
+pdflatex -interaction=nonstopmode -halt-on-error -output-directory=build/note docs/note.tex
+pdflatex -interaction=nonstopmode -halt-on-error -output-directory=build/note docs/note.tex
+cp build/note/note.pdf docs/note.pdf
+```
+
 ## Smaller or individual stages
 
 Generate a parent catalogue independently:

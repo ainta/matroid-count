@@ -1,0 +1,940 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array,enumitem,microtype}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,
+  urlcolor=blue!45!black]{hyperref}
+\hypersetup{pdftitle={Counting ten-element matroids by aggregating extensions},
+  pdfauthor={ainta}}
+\setlength{\parindent}{1.2em}
+\setlength{\parskip}{2pt}
+\setlength{\emergencystretch}{1.5em}
+\setlist{itemsep=2pt,topsep=4pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{example}[theorem]{Example}
+\newcounter{algorithm}
+\newenvironment{algorithm}[1]{%
+  \refstepcounter{algorithm}\par\medskip\noindent
+  \begin{minipage}{\linewidth}\hrule\medskip
+  \textbf{Algorithm \thealgorithm. #1}\par\smallskip
+  \begin{enumerate}[label=\arabic*.,leftmargin=2.2em,itemsep=2pt,topsep=0pt]
+}{\end{enumerate}\medskip\hrule\end{minipage}\par\medskip}
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\cl}{cl}
+\DeclareMathOperator{\type}{type}
+\DeclareMathOperator{\Fix}{Fix}
+\newcommand{\SP}{\mathrm{SP}}
+\newcommand{\bad}{\mathrm{bad}}
+\newcommand{\all}{\mathrm{all}}
+\newcommand{\mc}{\operatorname{\#MC}}
+\newcommand{\IS}{\mathsf{IS}}
+\newcommand{\Cut}{\mathsf{Cut}}
+\newcommand{\Part}{\mathcal P}
+\newcommand{\Fl}{\mathcal F}
+\newcommand{\ind}{\mathbf 1}
+\newcommand{\uFive}{3\,222\,227\,959\,444}
+\newcommand{\uTen}{3\,232\,000\,741\,644}
+\newcommand{\uSparse}{2\,630\,337\,889\,305}
+\newcommand{\uBad}{591\,890\,070\,139}
+
+\title{Counting ten-element matroids\\by aggregating extensions}
+\author{ainta}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We give an exact algorithm for counting matroid isomorphism classes using
+catalogues of smaller matroids. For each parent and an automorphism, the
+algorithm counts invariant modular cuts by branching on lower flats and
+counting independent sets on the remaining hyperplanes. Integer moments
+recover the Burnside terms for permutations with a fixed point; basis-exchange
+formulas supply the remaining terms. A separate sparse-paving calculation
+allows the general extension worker to omit that family. We give pseudocode
+and correctness proofs for these reductions and their composition. The
+implementation returns $\uFive$ rank-five classes on ten elements and
+$\uTen$ classes across all ranks.
+\end{abstract}
+
+\section{The problem and the algorithm}
+
+Let $u_{n,r}$ be the number of rank-$r$ matroids on $n$ elements up to
+isomorphism, and let $L_{n,r}$ be the number on the fixed labeled set $[n]$.
+All matroids are included: loops, parallel elements, coloops, and disconnected
+matroids are allowed. Isomorphism means a permutation of the ground set.
+Duality gives $u_{n,r}=u_{n,n-r}$, but distinct duals remain distinct classes.
+
+The algorithm generates smaller parents and counts their extensions in
+aggregate. Its two main reductions are
+\[
+\begin{aligned}
+\text{one parent and one automorphism}
+&\longrightarrow \text{lower-flat branches}
+\longrightarrow \text{independent-set counts},\\
+\text{parent extension counts}
+&\longrightarrow \text{integer moments}
+\longrightarrow \text{unpointed isomorphism classes}.
+\end{aligned}
+\]
+The first reduction avoids constructing the final matroids. The second
+avoids a separate isomorphism test for each possible extension.
+
+For ten elements, rank five is the large middle-rank problem. The computation
+splits it into sparse-paving and non-sparse-paving matroids:
+\begin{equation}\label{eq:partition-result}
+u_{10,5}=u^{\SP}_{10,5}+\Delta_{10,5}
+       =\uSparse+\uBad.
+\end{equation}
+The full algorithm also computes ranks three and four, uses elementary
+formulas for ranks zero through two, and obtains the remaining ranks by
+duality. Published counts are used for comparison, not as inputs.
+
+The mathematical inputs are complete sets $\Part_{q,r}$ of isomorphism-class
+representatives on $q$ elements, with exact automorphism groups. The
+implementation generates the catalogues from the empty matroid using the
+established extension generator of~\cite{MMIB,IC}; the extension worker computes
+their automorphism groups from the rank functions. The generator produces
+$|\Part_{9,5}|=190\,214$, agreeing with~\cite{MR}.
+Modular-cut extension theory is due to Crapo~\cite{Crapo}; canonical
+construction paths are standard~\cite{McKay}. The subject of this note is
+the aggregate counting algorithm built on these ingredients.
+
+\section{Counting extensions of one parent}\label{sec:cuts}
+
+Write $\rho_N$ for the rank function of a matroid $N$ on $E$, and set
+$r=\rho_N(E)$. A flat is a set equal to its closure; a hyperplane is a flat
+of rank $r-1$. Two flats form a modular pair when
+\begin{equation}\label{eq:modular-pair}
+\rho_N(F)+\rho_N(H)=\rho_N(F\cup H)+\rho_N(F\cap H).
+\end{equation}
+Let $e\notin E$ be the element to be added.
+
+\subsection{The Boolean formulation}
+
+A modular cut $\mathcal C\subseteq\Fl(N)$ is upward closed and closed under
+intersection of modular pairs. Crapo's correspondence~\cite{Crapo} identifies
+it with a unique extension $M$ satisfying $M\setminus e=N$. In this
+correspondence,
+\begin{equation}\label{eq:cut-meaning}
+F\in\mathcal C\quad\Longleftrightarrow\quad e\in\cl_M(F).
+\end{equation}
+In particular, for $X\subseteq E$,
+\begin{equation}\label{eq:extension-rank}
+\rho_M(X)=\rho_N(X),\qquad
+\rho_M(X\cup\{e\})=\rho_N(X)+1-\ind_{\{\cl_N(X)\in\mathcal C\}}.
+\end{equation}
+The empty cut gives a coloop extension and raises the rank by one.
+Every nonempty cut contains $E$ and gives a rank-preserving extension.
+
+Introduce $x_F\in\{0,1\}$ for every flat $F$. The nonempty cuts are exactly
+the satisfying assignments of
+\begin{align}
+x_E&=1,\label{eq:top}\\
+\neg x_F\lor x_H&\qquad(F\subsetneq H),\label{eq:upward}\\
+\neg x_F\lor\neg x_H\lor x_{F\cap H}
+&\qquad(F,H\text{ a modular pair}).\label{eq:cut-clause}
+\end{align}
+Thus counting extensions means counting these assignments, with the parent
+labels fixed.
+
+For $g\in\Aut(N)$, require the cut to be $g$-invariant by identifying flat
+variables in the same orbit under $\langle g\rangle$. Simplify repeated
+literals and delete tautological clauses. Denote the resulting formula by
+$\Phi_{N,g}$. Its orbit variables retain a well-defined flat rank.
+
+\begin{lemma}\label{lem:invariant-cuts}
+The models of $\Phi_{N,g}$ are in bijection with rank-preserving extensions
+of $N$ fixed by the permutation that acts as $g$ on $E$ and fixes $e$.
+\end{lemma}
+\begin{proof}
+An assignment to orbit variables is exactly a $g$-invariant assignment to
+flats. Equations~\eqref{eq:top}--\eqref{eq:cut-clause} say precisely that its
+selected flats form a nonempty modular cut. The extension correspondence
+is equivariant: equation~\eqref{eq:extension-rank} is preserved by $g$
+exactly when the cut is preserved. Distinct cuts give distinct extensions.
+\end{proof}
+
+\subsection{Why the remaining choices form a graph}
+
+Call a flat \emph{lower} if its rank is at most $r-2$. Branch on lower-flat
+orbit variables and apply unit propagation after every assignment. Once all
+lower variables are assigned, only hyperplane variables can remain undecided.
+
+\begin{lemma}[Hyperplane reduction]\label{lem:hyperplanes}
+After all lower variables are assigned and unit propagation has reached a
+consistent fixed point, the remaining models of $\Phi_{N,g}$ are in bijection
+with the independent sets of a graph on the undecided hyperplane orbits.
+Two distinct orbit vertices are adjacent if they contain hyperplanes $H,K$
+with $\rho_N(H\cap K)=r-2$.
+\end{lemma}
+\begin{proof}
+Distinct hyperplanes span $N$, so~\eqref{eq:modular-pair} becomes
+$\rho_N(H\cap K)=r-2$. Their intersection is a lower flat. If its variable
+is true, upward closure forces both hyperplanes true. Consequently, whenever
+both hyperplane variables remain undecided, their modular-pair clause reduces
+to $\neg x_H\lor\neg x_K$.
+
+Every other clause has at most one undecided variable: its other flats are
+lower or equal to $E$. Such a clause is either satisfied or has already
+been resolved by unit propagation. If two conflicting hyperplanes lie in the
+same orbit, the reduced clause is unary and that orbit cannot remain
+undecided. Thus all residual clauses forbid selecting the two ends of an
+edge, and no further constraints remain. Selecting an independent set
+therefore specifies exactly one completion of the cut.
+\end{proof}
+
+For fixed $(N,g)$ the conflict graph can be built once. Lower-flat branches
+change only its allowed vertex set. A nine-element rank-five parent has at
+most $\binom94=126$ hyperplanes and at most
+$\sum_{j=0}^3\binom9j=130$ lower flats: a rank-$j$ flat is the closure of
+some $j$-element basis. This explains the graph size used by the worker.
+
+\subsection{The independent-set kernel}
+
+For a graph $G$ and $S\subseteq V(G)$, let $i_G(S)$ count independent sets of
+$G[S]$, including the empty set. Write $N_G(v)$ for the open neighborhood
+of $v$. Algorithm~\ref{alg:is} uses exact state keys in a cache belonging
+to a fixed graph.
+
+\begin{algorithm}{$\IS_G(S)$}\label{alg:is}
+\item If $S=\varnothing$, return $1$. If $S$ is cached, return its value.
+\item Save $S_0\gets S$. Remove all isolated vertices of $G[S]$;
+      let $k$ be their number and $S$ the remaining set.
+\item If $S=\varnothing$, set $a\gets 1$.
+\item Otherwise, if component splitting finds a component $C\subsetneq S$,
+      set $a\gets\IS_G(C)\,\IS_G(S\setminus C)$.
+\item Otherwise, if $G[S]$ is a path on $t$ vertices, set $a\gets F_{t+2}$;
+      if it is a cycle, set $a\gets F_{t-1}+F_{t+1}$.
+\item Otherwise choose $v\in S$ of maximum degree and set
+      $a\gets\IS_G(S\setminus\{v\})+
+      \IS_G(S\setminus(\{v\}\cup N_G(v)))$.
+\item Cache and return $2^k a$ under the key $S_0$.
+\end{algorithm}
+
+Here $F_0=0,F_1=1$ are the Fibonacci numbers. The implementation attempts
+component splitting when fewer than $45$ vertices remain or the maximum
+degree is below $5$; otherwise it branches directly.
+
+\begin{proposition}\label{prop:is}
+Algorithm~\ref{alg:is} returns $i_G(S)$.
+\end{proposition}
+\begin{proof}
+An isolated vertex can be independently included or excluded, giving $2^k$.
+Choices on distinct components are independent, so their counts multiply.
+Partitioning by whether $v$ is selected gives
+\[
+i_G(S)=i_G(S\setminus\{v\})+
+i_G(S\setminus(\{v\}\cup N_G(v))).
+\]
+For paths, the same recurrence at an endpoint gives $F_{t+2}$; conditioning
+on one vertex of a cycle gives $F_{t+1}+F_{t-1}$. Every recursive argument
+is smaller, proving termination and correctness by induction on $|S|$.
+Cache entries store previously established values of the same function.
+Eviction changes only the amount of repeated work.
+\end{proof}
+
+\subsection{The extension worker}
+
+We allow a set $B$ of \emph{marked} orbit variables and a flag $b$ requiring
+at least one of them to be true. Ordinary extension counting uses $b=0$.
+Section~\ref{sec:nonsp} specifies the marks for non-sparse-paving counting.
+Build $\Phi_{N,g}$ and its hyperplane graph once, and start with $x_E=1$.
+
+\begin{algorithm}{$\Cut(\alpha,b)$ for fixed $\Phi_{N,g}$, $G$, and $B$}
+\label{alg:cut}
+\item Propagate unit clauses from the partial assignment $\alpha$.
+      If a contradiction occurs, return $0$.
+\item If a marked variable is true, set $b\gets0$.
+\item If an undecided lower variable $v$ exists, return
+      $\Cut(\alpha\cup\{v=1\},b)+\Cut(\alpha\cup\{v=0\},b)$,
+      using a separate state for each branch.
+\item Let $S$ be the set of undecided hyperplane variables.
+\item If $b=0$, return $\IS_G(S)$.
+\item Set $a\gets0$. List the marked vertices in $S$ as $v_1,\ldots,v_t$.
+\item For $j=1,\ldots,t$:
+      set $S\gets S\setminus\{v_j\}$ and
+      $a\gets a+\IS_G(S\setminus N_G(v_j))$.
+\item Return $a$.
+\end{algorithm}
+
+The C++ worker chooses a lower variable with maximum clause occurrence count
+and implements separate branch states by a reversible assignment trail.
+Its graph cache is fresh for each $(N,g)$; a bare vertex-mask key cannot be
+reused across different graphs.
+
+\begin{proposition}[Worker correctness]\label{prop:worker}
+Algorithm~\ref{alg:cut} counts exactly the models extending $\alpha$, subject
+to the requirement that some marked variable is true when $b=1$.
+\end{proposition}
+\begin{proof}
+Unit propagation forces values shared by every satisfying completion.
+A contradiction gives no completions. Branching on $v$ partitions all
+completions into two disjoint sets and decreases the number of undecided
+lower variables. At a leaf, Lemma~\ref{lem:hyperplanes} and
+Proposition~\ref{prop:is} give the unrestricted count.
+
+If a marked variable must still be selected, partition the independent sets
+by their first selected vertex in $v_1,\ldots,v_t$. For the $j$th part,
+$v_1,\ldots,v_{j-1}$ are excluded and $v_j$ is included. The remaining
+choices are precisely the independent sets of
+$G[S_0\setminus(\{v_1,\ldots,v_j\}\cup N_G(v_j))]$, where $S_0$ was the
+initial leaf set. These are the terms in lines 6--7. They are disjoint
+and exhaust the required models; when $t=0$ their sum is zero.
+\end{proof}
+
+\begin{example}[Five extensions of a three-point line]\label{ex:line}
+Take $N=U_{2,3}$. Its flats are $\varnothing$, the three singletons, and $E$.
+If $x_{\varnothing}=1$, every flat is selected: the new element is a loop.
+If $x_{\varnothing}=0$, the hyperplane graph is $K_3$, with four independent
+sets. The empty set gives $U_{2,4}$, and each singleton makes $e$ parallel
+to one existing point. Thus there are $1+4=5$ rank-preserving labeled
+extensions. For the automorphism $(12)$, the orbit of the first two
+hyperplanes has an internal conflict and is excluded in the non-loop branch.
+Only the empty choice and the third hyperplane remain, giving $1+2=3$
+invariant extensions. The coloop extension is separate and has rank three.
+\end{example}
+
+\section{From parent counts to isomorphism classes}\label{sec:symmetry}
+
+Let $F_{n,r}(\lambda)$ be the number of labeled rank-$r$ matroids fixed by
+one permutation of cycle type $\lambda\vdash n$. If $a_j(\lambda)$ is the
+number of parts equal to $j$, set
+\[
+z_\lambda=\prod_{j\ge1}j^{a_j(\lambda)}a_j(\lambda)!.
+\]
+There are $n!/z_\lambda$ permutations of this type. Burnside's lemma gives
+\begin{equation}\label{eq:burnside}
+u_{n,r}=\sum_{\lambda\vdash n}\frac{F_{n,r}(\lambda)}{z_\lambda}.
+\end{equation}
+The identity term $F_{n,r}(1^n)$ is $L_{n,r}$.
+
+\subsection{Permutations with a fixed element}
+
+Put $q=n-1$. For $N\in\Part_{q,r}$ and $g\in\Aut(N)$, let $c(N,g)$ be
+the output of Algorithm~\ref{alg:cut} with no marked-variable requirement.
+For every $\mu\vdash q$, define the integer
+\begin{equation}\label{eq:general-moment}
+\begin{split}
+T^{(r)}_\mu={}&
+\sum_{N\in\Part_{q,r}}\frac{q!}{|\Aut(N)|}
+ \sum_{\substack{g\in\Aut(N)\\\type(g)=\mu}}c(N,g)\\
+&+\sum_{N\in\Part_{q,r-1}}\frac{q!}{|\Aut(N)|}
+ \#\{g\in\Aut(N):\type(g)=\mu\}.
+\end{split}
+\end{equation}
+The second line counts coloop extensions. Write $\mu\cup(1)$ for adjoining
+one part of size one.
+
+\begin{theorem}[Parent-moment identity]\label{thm:moment}
+For every $\mu\vdash n-1$,
+\begin{equation}\label{eq:moment-fixed}
+F_{n,r}(\mu\cup(1))=\frac{z_\mu T^{(r)}_\mu}{(n-1)!}.
+\end{equation}
+\end{theorem}
+\begin{proof}
+Fix the added label $e=n$. Count pairs $(M,g)$, where $M$ is a labeled
+rank-$r$ matroid on $[n]$, $g$ is a permutation of $[q]$ of type $\mu$,
+and $g$ extended by fixing $e$ preserves $M$.
+
+Delete $e$. If $e$ is not a coloop, the parent has rank $r$, is preserved
+by $g$, and Lemma~\ref{lem:invariant-cuts} supplies $c(N,g)$ choices.
+If $e$ is a coloop, the parent has rank $r-1$ and there is exactly one
+extension. Each parent type has $q!/|\Aut(N)|$ labelings. Summing by parent
+therefore gives precisely~\eqref{eq:general-moment}.
+
+Alternatively, there are $q!/z_\mu$ choices of $g$. They are conjugate in
+$S_q$, so each fixes $F_{n,r}(\mu\cup(1))$ matroids. Equating the two
+counts proves~\eqref{eq:moment-fixed}.
+\end{proof}
+
+In particular, the fixed-point part of~\eqref{eq:burnside} is
+\begin{equation}\label{eq:fixed-contribution}
+\sum_{\mu\vdash q}\frac{T^{(r)}_\mu}{q!\,(a_1(\mu)+1)},
+\end{equation}
+because $z_{\mu\cup(1)}=(a_1(\mu)+1)z_\mu$. This factor is the precise
+correction for adding a distinguished fixed element. Summing extension
+orbits directly would instead count pointed matroids $(M,e)$, with one
+occurrence per element orbit of $M$.
+
+\paragraph{Reducing automorphism work.}
+If $g'=hgh^{-1}$ for $h\in\Aut(N)$, the map
+$\mathcal C\mapsto h(\mathcal C)$ bijects the invariant cuts for $g$ and
+$g'$. Thus each inner sum in~\eqref{eq:general-moment} may be evaluated
+using one representative per conjugacy class of $\Aut(N)$, multiplied by
+its class size. Equal cycle types in $S_q$ alone do not establish this
+bijection for a fixed parent: the conjugating permutation must preserve $N$.
+
+\subsection{Permutations without a fixed element}
+
+For a representative $\sigma$ of type $\lambda\vdash n$, introduce one
+Boolean variable $y_O$ for every orbit $O$ of $r$-subsets under
+$\langle\sigma\rangle$. Let $[B]$ denote the orbit of $B$. Use the formula
+\begin{align}
+\Psi_{n,r,\sigma}={}&\left(\bigvee_O y_O\right)\ \land
+\bigwedge_{\substack{B,C\in\binom{[n]}r\\a\in B\setminus C}}
+\left(\neg y_{[B]}\lor\neg y_{[C]}\lor
+ \bigvee_{b\in C\setminus B}y_{[(B\setminus\{a\})\cup\{b\}]}\right).
+\label{eq:bases}
+\end{align}
+Write $\mc(\Psi)$ for its exact number of satisfying assignments.
+
+\begin{proposition}\label{prop:bases}
+$\mc(\Psi_{n,r,\sigma})=F_{n,r}(\lambda)$.
+\end{proposition}
+\begin{proof}
+An assignment selects a unique $\sigma$-invariant family of $r$-subsets.
+The first clause makes it nonempty. The remaining clauses are exactly the
+basis-exchange axiom, which characterizes the basis families of rank-$r$
+matroids. Conversely, the bases of every fixed matroid give one satisfying
+assignment. No auxiliary variables occur, so the correspondence preserves
+the number of models without any projection factor.
+\end{proof}
+
+For a hard formula we choose $k$ variables and count all $2^k$ restrictions.
+Every model has exactly one assignment to these variables, hence
+\begin{equation}\label{eq:cubes}
+\mc(\Psi)=\sum_{\eta\in\{0,1\}^k}\mc(\Psi\land\eta).
+\end{equation}
+These jobs can be scheduled independently. At $n=10$ there are $42$ cycle
+types: $30$ with a fixed point and $12$ without one. The latter are the
+only types sent to the full basis-formula counter.
+
+\begin{algorithm}{Full rank count $\mathsf{RankCount}(n,r)$, $1\le r<n$}
+\label{alg:rank}
+\item Set $q\gets n-1$ and $T_\mu\gets0$ for every $\mu\vdash q$.
+\item For each $N\in\Part_{q,r}$, put $w\gets q!/|\Aut(N)|$.
+      For every conjugacy-class representative $g\in\Aut(N)$ with class
+      size $s$, compute $c\gets\Cut(x_E=1,0)$ and add $ws c$ to
+      $T_{\type(g)}$.
+\item For each $N\in\Part_{q,r-1}$ and each such class $(s,g)$,
+      add $q!s/|\Aut(N)|$ to $T_{\type(g)}$.
+\item For each $\mu\vdash q$, set
+      $F(\mu\cup(1))\gets z_\mu T_\mu/q!$, checking exact division.
+\item For each $\lambda\vdash n$ with no part $1$, choose $\sigma$ of that
+      type and set $F(\lambda)\gets\mc(\Psi_{n,r,\sigma})$.
+\item Set $A\gets\sum_{\lambda\vdash n}(n!/z_\lambda)F(\lambda)$.
+      Return $(A/n!,F(1^n))$, checking exact division.
+\end{algorithm}
+
+\begin{theorem}\label{thm:rank}
+Given complete parent catalogues and their automorphism groups,
+Algorithm~\ref{alg:rank}, with exact formula counts, returns $(u_{n,r},L_{n,r})$.
+\end{theorem}
+\begin{proof}
+Proposition~\ref{prop:worker} supplies the correct invariant cut counts.
+Conjugacy-class aggregation gives the inner sums of
+\eqref{eq:general-moment}. Theorem~\ref{thm:moment} supplies every
+fixed-point term, and Proposition~\ref{prop:bases} supplies every remaining
+term. These two sets of cycle types partition all of $S_n$.
+Equation~\eqref{eq:burnside} proves the unlabeled count; the identity fixes
+every labeled matroid and gives the second output.
+\end{proof}
+
+\section{Counting only the non-sparse-paving extensions}\label{sec:nonsp}
+
+A rank-$r$ matroid is paving if every circuit has size at least $r$, and
+sparse paving if both it and its dual are paving. For a rank-five matroid
+on ten elements this means that every circuit and every cocircuit has size
+at least five. Equivalently, it is paving and every hyperplane has at most
+five elements, since the complement of a hyperplane is a cocircuit.
+
+In this section $N$ has rank five on nine elements, and $M\setminus e=N$
+also has rank five. A non-sparse-paving parent has no sparse-paving extension
+of this rank: deletion preserves its circuits, and a parent hyperplane of
+size at least six lies in a child hyperplane of size at least six.
+
+\begin{lemma}[The marked flats]\label{lem:bad}
+Suppose $N$ is sparse paving and $\mathcal C$ is its nonempty extension cut.
+The extension $M$ is non-sparse-paving if and only if $\mathcal C$ contains
+either a flat of rank at most three or a rank-four hyperplane of size five.
+\end{lemma}
+\begin{proof}
+If $F\in\mathcal C$ has rank at most three, choose a basis $I$ of $F$.
+Then $e\in\cl_M(I)$, so $I\cup\{e\}$ contains a circuit through $e$
+of size at most four. If a five-element hyperplane $H$ belongs to
+$\mathcal C$, its closure in $M$ is $H\cup\{e\}$, a six-element
+hyperplane. Its complement is a four-element cocircuit. Either case
+violates sparse paving.
+
+Conversely, if $M$ has a circuit $D$ of size at most four, then $e\in D$
+because $N$ is paving. The flat $\cl_N(D\setminus\{e\})$ has rank at
+most three and belongs to $\mathcal C$. Otherwise $M$ is paving, so failure
+of sparse paving gives a hyperplane $K$ with $|K|\ge6$. It must contain
+$e$: a hyperplane of $M$ avoiding $e$ is a hyperplane of $N$, whose size
+is at most five. The flat $H=K\setminus\{e\}$ of $N$ has at least five
+elements. Since every four-element subset of $N$ is independent,
+$\rho_N(H)=4$. Thus $H$ is a hyperplane, $|H|=5$, and
+$\rho_M(H\cup\{e\})=\rho_N(H)$, proving $H\in\mathcal C$.
+\end{proof}
+
+Let $c_{\bad}(N,g)$ be the number of invariant nonempty cuts giving
+non-sparse-paving extensions. If $N$ is not sparse paving, use
+Algorithm~\ref{alg:cut} with $b=0$. Otherwise mark the orbit variables
+containing the flats in Lemma~\ref{lem:bad}, and use $b=1$. These marks
+are invariant under $\Aut(N)$, so the conjugacy-class reduction still
+applies. Proposition~\ref{prop:worker} proves that the omitted branch is
+exactly the sparse-paving family.
+
+\subsection{The coloop contribution at the middle rank}
+
+Every rank-five coloop extension on ten elements is non-sparse-paving,
+because a coloop is a one-element cocircuit. Duality bijects
+$\Part_{9,5}$ and $\Part_{9,4}$ and preserves their automorphism groups
+as permutation groups. Consequently the two parent sums can be paired:
+\begin{equation}\label{eq:bad-moment}
+T^{\bad}_\mu=
+\sum_{N\in\Part_{9,5}}\frac{9!}{|\Aut(N)|}
+ \sum_{\substack{g\in\Aut(N)\\\type(g)=\mu}}
+       \bigl(c_{\bad}(N,g)+1\bigr),\qquad \mu\vdash9.
+\end{equation}
+The $+1$ is the coloop extension of the dual parent. This pairing is used
+only at $(n,r)=(10,5)$; the general rank calculation keeps the two parent
+sets in~\eqref{eq:general-moment} separate.
+
+Let $F^{\SP}_{10,5}(\lambda)$ be the sparse-paving fixed count. Applying
+the proof of Theorem~\ref{thm:moment} to the non-sparse-paving family gives
+\begin{equation}\label{eq:bad-fixed}
+F^{\bad}_{10,5}(\lambda)=
+\begin{cases}
+z_\mu T^{\bad}_\mu/9!,&\lambda=\mu\cup(1),\\
+\mc(\Psi_{10,5,\sigma})-F^{\SP}_{10,5}(\lambda),&1\notin\lambda.
+\end{cases}
+\end{equation}
+Thus
+\begin{equation}\label{eq:delta}
+\Delta_{10,5}=\sum_{\lambda\vdash10}
+                  \frac{F^{\bad}_{10,5}(\lambda)}{z_\lambda}.
+\end{equation}
+All fixed-point terms are obtained without visiting the all-marks-false
+extension family. The twelve derangement terms count all matroids by the
+basis formula and subtract the sparse-paving terms.
+
+\section{The sparse-paving calculation}\label{sec:sparse}
+
+For $1\le r<n$, let $J(n,r)$ be the Johnson graph: its vertices are the $r$-subsets of $[n]$,
+with adjacency when their intersection has size $r-1$. Circuit-hyperplane
+families of rank-$r$ sparse-paving matroids are exactly its independent
+sets~\cite{MR}. Write $I(n,r)=i(J(n,r))$ for their labeled count.
+All graph orbits below are under ground-set permutations. When $n=2r$,
+complementation also preserves $J(n,r)$; we do not quotient by it, because
+it corresponds to matroid duality.
+
+\subsection{The identity permutation}
+
+Distinguish $e=n$ and split a circuit-hyperplane family into $A$, the blocks
+containing $e$ with $e$ removed, and $B$, the blocks avoiding $e$.
+Define
+\[
+\Gamma^+(A)=\left\{b\in\binom{[n-1]}r:\exists a\in A,\ a\subset b\right\}.
+\]
+Then $A$ is independent in $J(n-1,r-1)$, $B$ is independent in $J(n-1,r)$,
+and cross-adjacency is excluded exactly by $B\cap\Gamma^+(A)=\varnothing$.
+
+\begin{proposition}[Parent-orbit split]\label{prop:split}
+If $\mathcal A$ contains one representative from every $S_{n-1}$-orbit
+of independent sets of $J(n-1,r-1)$, then
+\begin{equation}\label{eq:split}
+I(n,r)=\sum_{A\in\mathcal A}
+       \frac{(n-1)!}{|\Aut(A)|}\,
+       i\bigl(J(n-1,r)-\Gamma^+(A)\bigr).
+\end{equation}
+\end{proposition}
+\begin{proof}
+Every circuit-hyperplane family has a unique pair $(A,B)$. For a fixed
+labeled $A$, its possible $B$ are the independent sets of the displayed
+residual graph. Relabeling $A$ gives an isomorphic residual graph, so all
+$(n-1)!/|\Aut(A)|$ members of its orbit have the same number of extensions.
+Summing over the parent orbits counts every labeled family once.
+\end{proof}
+
+\subsection{Small parents by completion counts}
+
+For $(n,r)=(10,5)$, complementation on $[9]$ identifies $J(9,5)$ with
+$G=J(9,4)$. A parent $A$ with $k$ blocks forbids a set $D$ that is the union
+of $k$ disjoint five-vertex cliques: one clique consists of the five
+supersets of a fixed four-subset before complementation. Two distinct
+parent blocks cannot share a five-element superset, because $A$ is
+independent in $J(9,4)$.
+
+For an independent set $T$ of $G$, define
+$E(T)=\#\{H\subseteq V(G):H\text{ independent},\ T\subseteq H\}$.
+Let $o(H)=9!/|\Aut(H)|$ and
+$m_T(H)=\#\{T'\subseteq H:T'\cong T\}$, with isomorphism under $S_9$.
+
+\begin{proposition}[Completion table and exact truncation]\label{prop:completion}
+Given a complete $S_9$-orbit catalogue $\mathcal H$ of independent sets of
+$G$, we have
+\begin{align}
+E(T)&=\frac{\sum_{H\in\mathcal H}o(H)m_T(H)}{o(T)},
+\label{eq:completion}\\
+i(G-D)&=\sum_{\substack{T\subseteq D\\T\text{ independent}}}
+                  (-1)^{|T|}E(T).
+\label{eq:avoid}
+\end{align}
+If $D$ is covered by $k$ cliques, all terms with $|T|>k$ vanish.
+\end{proposition}
+\begin{proof}
+For~\eqref{eq:completion}, count pairs $(H,T')$ over all labeled independent
+sets $H$, with $T'\subseteq H$ and $T'\cong T$. Summing first over $H$
+gives the numerator. Each of the $o(T)$ copies of $T$ has the same number
+$E(T)$ of completions, giving the denominator.
+
+For~\eqref{eq:avoid}, a fixed independent set $H$ contributes
+$\sum_{T\subseteq H\cap D}(-1)^{|T|}$, which equals one when
+$H\cap D=\varnothing$ and zero otherwise. Every such $T$ is independent.
+An independent set can meet each covering clique in at most one vertex,
+so its size is at most $k$.
+\end{proof}
+
+The implementation tabulates $E(T)$ for $|T|\le5$ from the freshly generated
+nine-element sparse-paving catalogue. This handles all $251$ parent types
+with $|A|\le5$. Larger parents use Algorithm~\ref{alg:is} on the residual
+graph. This is a choice between two exact formulas for the same count.
+
+\subsection{The other permutations}
+
+For $\sigma\in S_n$, a fixed circuit-hyperplane family is a union of
+$\langle\sigma\rangle$-orbits of $r$-subsets. Delete any orbit containing
+an internal Johnson edge. Form a graph $Q_\sigma$ on the remaining orbits,
+joining two when an edge connects their members. Selecting independent
+orbit vertices is equivalent to selecting a $\sigma$-invariant independent
+set of $J(n,r)$; hence
+\begin{equation}\label{eq:sp-fixed}
+F^{\SP}_{n,r}(\type(\sigma))=i(Q_\sigma).
+\end{equation}
+
+\begin{algorithm}{Sparse-paving fixed counts at $(n,r)=(10,5)$}
+\label{alg:sparse}
+\item Generate the complete catalogue $\mathcal H$ of independent sets of
+      $J(9,4)$ modulo $S_9$, including their automorphism orders.
+\item Compute $E(T)$ for the types with $|T|\le5$
+      using~\eqref{eq:completion}.
+\item For each $A\in\mathcal H$, compute its residual count by
+      \eqref{eq:avoid} if $|A|\le5$, and by $\IS$ otherwise.
+\item Set $F^{\SP}(1^{10})$ to the orbit-weighted sum~\eqref{eq:split}.
+\item For every other $\lambda\vdash10$, choose a permutation $\sigma$ of
+      type $\lambda$, construct $Q_\sigma$, and set
+      $F^{\SP}(\lambda)\gets\IS_{Q_\sigma}(V(Q_\sigma))$.
+\item Return the table $F^{\SP}$ and
+      $u^{\SP}_{10,5}=\sum_{\lambda\vdash10}F^{\SP}(\lambda)/z_\lambda$.
+\end{algorithm}
+
+\begin{corollary}\label{cor:sparse}
+Algorithm~\ref{alg:sparse} returns the sparse-paving fixed counts and their
+unlabeled total.
+\end{corollary}
+\begin{proof}
+Propositions~\ref{prop:split} and~\ref{prop:completion} give the identity
+term. The orbit-selection bijection proves~\eqref{eq:sp-fixed} for every
+other term. Proposition~\ref{prop:is} evaluates these graph counts, and
+Burnside's lemma gives the final sum.
+\end{proof}
+
+\section{The complete ten-element algorithm}
+
+For the three smallest ranks, direct formulas are sufficient. For $n\ge2$,
+\begin{align}
+(u_{n,0},L_{n,0})&=(1,1),\nonumber\\
+(u_{n,1},L_{n,1})&=(n,2^n-1),\label{eq:small-ranks}\\
+u_{n,2}&=\sum_{s=2}^n\bigl(p(s)-1\bigr),\qquad
+L_{n,2}=B_{n+1}-2^n.\nonumber
+\end{align}
+Here $p(s)$ is the integer partition number and $B_s$ is the Bell number.
+Rank one is determined by its nonempty set of nonloops. A rank-two matroid
+is determined by its loops and a partition of the nonloops into at least
+two parallel classes. Up to isomorphism, the class sizes are an integer
+partition of some $s\le n$ with at least two parts. For labeled counting,
+adjoin a marker to the loop block and partition the resulting $n+1$
+elements. The forbidden cases with zero or one nonloop block number
+$1+(2^n-1)=2^n$. This proves~\eqref{eq:small-ranks}.
+
+\begin{algorithm}{All matroids on ten elements}
+\label{alg:ten}
+\item Generate the parent catalogues $\Part_{9,r}$ needed below, with their
+      automorphism groups, and the sparse-paving catalogue for
+      Algorithm~\ref{alg:sparse}.
+\item Run Algorithm~\ref{alg:sparse} to obtain $F^{\SP}(\lambda)$ for all
+      $\lambda\vdash10$.
+\item Set $T^{\bad}_\mu\gets0$ for all $\mu\vdash9$.
+      For each $N\in\Part_{9,5}$ and each automorphism conjugacy class
+      $(s,g)$, compute $c_{\bad}(N,g)$ as in Section~\ref{sec:nonsp} and add
+      $9!s(c_{\bad}(N,g)+1)/|\Aut(N)|$ to $T^{\bad}_{\type(g)}$.
+\item Obtain $F^{\bad}(\lambda)$ from~\eqref{eq:bad-fixed}, and set
+      $F_5(\lambda)\gets F^{\SP}(\lambda)+F^{\bad}(\lambda)$.
+      Check the exact divisions and nonnegativity.
+\item Set $u_{10,5}\gets\sum_{\lambda\vdash10}F_5(\lambda)/z_\lambda$
+      by integer Burnside accumulation, and $L_{10,5}\gets F_5(1^{10})$.
+\item Compute ranks $3$ and $4$ with Algorithm~\ref{alg:rank} and ranks
+      $0,1,2$ with~\eqref{eq:small-ranks}.
+\item Return
+      $\bigl(u_{10,5}+2\sum_{r=0}^4u_{10,r},\;
+      L_{10,5}+2\sum_{r=0}^4L_{10,r}\bigr)$.
+\end{algorithm}
+
+\begin{theorem}[Correctness of the combined count]\label{thm:ten}
+With complete parent catalogues, their exact automorphism groups, and exact
+counts of the basis formulas, Algorithm~\ref{alg:ten} returns the numbers
+of unlabeled and labeled matroids on ten elements, across all ranks.
+\end{theorem}
+\begin{proof}
+Corollary~\ref{cor:sparse} gives the fixed counts for the sparse-paving
+family. Lemma~\ref{lem:bad} and Proposition~\ref{prop:worker} give the
+invariant non-sparse-paving extensions of every rank-five parent.
+Equation~\eqref{eq:bad-moment} also includes every coloop extension through
+the dual rank-four parent. Theorem~\ref{thm:moment}, restricted to this
+isomorphism-invariant family, therefore gives every non-sparse-paving
+fixed-point term. Proposition~\ref{prop:bases} gives the full derangement
+terms, from which the sparse-paving terms are subtracted.
+
+The two families are disjoint and exhaustive, so their fixed counts add to
+$F_{10,5}(\lambda)$ for every cycle type. Burnside's lemma and the identity
+term give the two rank-five counts. Theorem~\ref{thm:rank} and
+\eqref{eq:small-ranks} establish ranks zero through four. Finally, duality
+is a bijection on both labeled matroids and isomorphism classes, pairing
+each rank below five with a distinct rank above five. The last line sums
+these disjoint ranks exactly once.
+\end{proof}
+
+The algorithm's substantial savings occur before the final Burnside sum.
+It counts many hyperplane selections with a single graph call, avoids the
+large sparse-paving extension family in the general worker, and replaces
+the hardest small-parent graph counts by a completion table. The moments
+make these aggregate counts usable without constructing the ten-element
+objects to determine their automorphism groups.
+
+\section{Implementation and computation}
+
+\subsection{Implementation}
+
+To compute $\Aut(N)$, the worker backtracks over bijections of the parent
+ground set. A candidate image must have the same counts of containing
+subsets of each size and rank. After each assignment, it checks rank
+preservation on every subset of the assigned domain. Every automorphism
+passes both tests, while every completed bijection preserves the full rank
+function; thus the returned group is exact. Its conjugacy classes are
+formed by explicitly collecting $hgh^{-1}$ for $h\in\Aut(N)$.
+
+The extension worker stores graph states as bit masks. Its implication
+propagation and reversible assignment trail implement
+Algorithm~\ref{alg:cut}; the independent-set kernel implements
+Algorithm~\ref{alg:is}. Each parent and automorphism class defines an
+independent counting problem. Persistent processes take these jobs from a
+shared queue, retain the graph cache within a job, and return integer
+moment contributions. Moment accumulation and final reductions use
+arbitrary-precision integers.
+
+The derangement formulas use one variable per basis orbit and no auxiliary
+variables. Ganak~\cite{Ganak} is run in exact mode. For the type $2^5$ at
+ranks four and five, the driver fixes eight variables of highest clause
+occurrence and sums all $256$ resulting cubes, using~\eqref{eq:cubes}.
+Completed parent rows and formula counts are checkpointed; a timed-out job
+has no numeric contribution until it completes.
+
+The source correspondence is:
+\begin{center}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Part of the algorithm & Source file in the repository\\
+\midrule
+Independent-set kernel & \texttt{src/split\_count.cpp}\\
+Invariant modular cuts & \texttt{src/extension\_worker.cpp}\\
+Small-parent completion table & \texttt{src/small\_extensions.hpp}\\
+Sparse-paving fixed counts & \texttt{scripts/count\_sparse.py}\\
+Basis-exchange formulas & \texttt{scripts/export\_symmetry.py}\\
+Moment reduction and all-rank sum & \texttt{scripts/count.py}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Results}
+
+Table~\ref{tab:ranks} gives the outputs by rank. The full sums are
+\begin{equation}\label{eq:totals}
+\boxed{u_{10}=\uTen},\qquad
+\boxed{L_{10}=11\,727\,995\,799\,397\,397\,461}.
+\end{equation}
+Ranks two through four agree with the published values
+in~\cite[Appendix A]{JS}, which attributes the rank-four enumeration
+to~\cite{MMIB}.
+
+\begin{table}[htbp]
+\centering
+\caption{Computed ten-element counts. Ranks $10-r$ have the same values.}
+\label{tab:ranks}
+\begin{tabular}{@{}rrr@{}}
+\toprule
+Rank $r$ & Unlabeled $u_{10,r}$ & Labeled $L_{10,r}$\\
+\midrule
+0 & 1 & 1\\
+1 & 10 & 1\,023\\
+2 & 128 & 677\,546\\
+3 & 10\,037 & 16\,869\,404\,175\\
+4 & 4\,886\,380\,924 & 17\,716\,560\,870\,661\,325\\
+5 & \uFive & 11\,692\,562\,643\,915\,909\,321\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The rank-five calculation separates as follows. In the middle row,
+``nonidentity numerator'' means
+$\sum_{\lambda\ne1^{10}}(10!/z_\lambda)F(\lambda)$; adding the first two
+rows and dividing by $10!$ gives the last row.
+\begin{center}
+\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+ & Sparse paving & Non-sparse-paving\\
+\midrule
+Identity fixed count
+ & 9\,544\,867\,699\,823\,218\,639
+ & 2\,147\,694\,944\,092\,690\,682\\
+Nonidentity numerator
+ & 102\,432\,886\,765\,361 & 155\,742\,427\,712\,518\\
+Unlabeled count & \uSparse & \uBad\\
+\bottomrule
+\end{tabular}
+\end{center}
+The complete tables of fixed counts are recorded in
+\texttt{results/fixed\_terms.json}. Appendix~\ref{app:derangements} lists
+the twelve rank-five derangement counts.
+
+The recorded full run took $389.16$ seconds on $64$ physical cores of two
+AMD EPYC 9354 processors. This includes generating the parents from the
+empty matroid ($3.83$ seconds), the sparse-paving calculation ($124.85$
+seconds), ranks three and four ($6.92$ and $76.72$ seconds), and the
+remaining rank-five work ($176.47$ seconds). Compilation and the separate
+validation runs are excluded. The C++ programs were compiled with GCC
+13.3.0 and \texttt{-O3 -march=native -std=c++17}.
+
+\subsection{Checks and reproduction}
+
+The generated catalogues reproduce all $55$ size--rank entries through
+nine elements in~\cite{MR}, including $383\,172$ classes on nine elements.
+Across sizes zero through nine, all $385\,370$ canonical rank arrays match
+the reference catalogue~\cite{Catalogue}. The rank axioms, absence of
+isomorphic duplicates, and closure under duality were checked directly.
+For the $190\,214$ rank-five parents on nine elements, a separate
+automorphism-order check agrees with the worker; relabeling the parents
+also preserves every moment vector.
+
+The aggregate algorithm itself reproduces the known values
+\[
+\begin{array}{c|rrrrrr}
+(n,r)&(6,3)&(7,3)&(8,3)&(8,4)&(9,3)&(9,4)\\ \hline
+u_{n,r}&38&108&325&940&1\,275&190\,214.
+\end{array}
+\]
+These cases exercise both the parent-moment terms and the derangement
+formulas. A fresh ten-element run with regenerated parents reproduces all
+$126$ fixed counts for ranks three, four, and five. The result and check
+summaries are in \texttt{results/counts.json},
+\texttt{results/validation.json}, and \texttt{results/provenance.json}.
+
+The implementation is in the \texttt{matroid-count} repository~\cite{Code},
+revision \texttt{d1aaa1468a01}. From its root, on Linux with Python 3.10+,
+GCC, Make, and Boost headers, run:
+\begin{verbatim}
+python3 scripts/setup.py --audit
+make -j4
+make audit
+make test
+python3 scripts/count.py --workdir runs/n10 --jobs 64
+python3 scripts/validate.py --parents runs/n10/parents \
+    --ten-run runs/n10 --out runs/n10/validation --jobs 8
+\end{verbatim}
+The computed total is written to \texttt{runs/n10/total.json}.
+The generated parent ledgers, formulas, and solver logs remain in that
+run directory. The source tree contains the compact result summaries.
+
+\appendix
+\section{Rank-five derangement terms}\label{app:derangements}
+
+Each entry in Table~\ref{tab:derangements} is the number of labeled matroids
+fixed by one permutation of the indicated type. The non-sparse-paving
+column is obtained by subtraction. Its contribution to the unlabeled count
+is the sum of that column divided, row by row, by $z_\lambda$.
+
+\begin{table}[htbp]
+\centering
+\caption{All twelve derangement types in $S_{10}$ at rank five.}
+\label{tab:derangements}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Cycle type & All matroids & Sparse paving & Non-sparse-paving\\
+\midrule
+$2^5$     & 584\,746\,603 & 217\,942\,377 & 366\,804\,226\\
+$4,2^3$   & 792\,347 & 34\,257 & 758\,090\\
+$3^2,2^2$ & 104\,620 & 16\,542 & 88\,078\\
+$6,2^2$   & 5\,620 & 1\,146 & 4\,474\\
+$5,3,2$   & 129 & 4 & 125\\
+$4^2,2$   & 150\,791 & 53\,705 & 97\,086\\
+$8,2$     & 637 & 389 & 248\\
+$4,3^2$   & 1\,022 & 16 & 1\,006\\
+$7,3$     & 28 & 1 & 27\\
+$6,4$     & 746 & 132 & 614\\
+$5^2$     & 24\,566 & 21\,969 & 2\,597\\
+$10$      & 78 & 67 & 11\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{thebibliography}{10}
+\small
+\bibitem{Crapo}
+H.~H. Crapo,
+Single-element extensions of matroids,
+\emph{J. Res. Nat. Bur. Standards Sect. B} \textbf{69B} (1965), 55--65.
+\href{https://doi.org/10.6028/jres.069B.003}{doi:10.6028/jres.069B.003}.
+
+\bibitem{MR}
+D. Mayhew and G.~F. Royle,
+Matroids with nine elements,
+\emph{J. Combin. Theory Ser. B} \textbf{98} (2008), 415--431.
+\href{https://doi.org/10.1016/j.jctb.2007.07.005}{doi:10.1016/j.jctb.2007.07.005}.
+
+\bibitem{McKay}
+B.~D. McKay,
+Isomorph-free exhaustive generation,
+\emph{J. Algorithms} \textbf{26} (1998), 306--324.
+\url{https://users.cecs.anu.edu.au/~bdm/papers/orderly.pdf}.
+
+\bibitem{MMIB}
+Y. Matsumoto, S. Moriyama, H. Imai, and D. Bremner,
+Matroid enumeration for incidence geometry,
+\emph{Discrete Comput. Geom.} \textbf{47} (2012), 17--43.
+\href{https://doi.org/10.1007/s00454-011-9388-y}{doi:10.1007/s00454-011-9388-y}.
+
+\bibitem{JS}
+M. Joswig and B. Schr\"oter,
+Matroids from hypersimplex splits,
+\emph{J. Combin. Theory Ser. A} \textbf{151} (2017), 254--284.
+\href{https://doi.org/10.1016/j.jcta.2017.05.001}{doi:10.1016/j.jcta.2017.05.001}.
+
+\bibitem{IC}
+IC matroid generator, source repository.
+\url{https://github.com/gmou3/matroid-generator}.
+Version used: \texttt{60645ae024e831fba3ebd35b2388515b0304140a}.
+
+\bibitem{Ganak}
+Ganak exact model counter, version 2.6.4.
+\url{https://github.com/meelgroup/ganak}.
+
+\bibitem{Catalogue}
+\emph{Matroids with 9 elements}, reference catalogue, Zenodo.
+\url{https://zenodo.org/records/6825419}.
+
+\bibitem{Code}
+ainta, \emph{Counting all matroids on ten elements}, source repository.
+\url{https://github.com/ainta/matroid-count}.
+Version used: \texttt{d1aaa1468a01d983b14651a58874948dd357c606}.
+\end{thebibliography}
+\end{document}
