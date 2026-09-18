@@ -1,7 +1,6 @@
 # Completed computation
 
-These files are compact records of completed calculations, not inputs to the
-counter:
+These files record the completed calculation:
 
 | File | Contents |
 |---|---|
@@ -10,10 +9,9 @@ counter:
 | [`validation.json`](validation.json) | Published benchmarks, independent catalogue checks and agreement with the earlier full run |
 | [`provenance.json`](provenance.json) | Commands, machine/compiler information, timings and source/binary checksums |
 
-Large integer counts are decimal strings so that JSON readers do not round
-them. A cycle type such as `1.1.2.2.4` denotes a partition of ten; ten `1`s give
-the identity permutation and therefore the labeled count.
+Large integer counts are stored as decimal strings to preserve precision.
+A cycle type such as `1.1.2.2.4` denotes a partition of ten; ten `1`s give the
+identity permutation and therefore the labeled count.
 
-The full checkpoint ledgers, generated catalogues and solver logs are rebuilt
-under the selected `runs/` directory. They are intentionally not committed.
-Follow [the reproduction instructions](../docs/reproduction.md) to obtain them.
+Follow [the reproduction instructions](../docs/reproduction.md) to rebuild the
+calculation and its full logs.

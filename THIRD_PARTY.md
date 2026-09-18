@@ -8,9 +8,8 @@ accounting and audit code with the following earlier implementations.
 The runtime source subset in `vendor/matroid-generator/` is copied without
 changes from [gmou3/matroid-generator](https://github.com/gmou3/matroid-generator),
 commit `60645ae024e831fba3ebd35b2388515b0304140a`. Its GPL-3.0 license is retained
-in [LICENSE](vendor/matroid-generator/LICENSE). Unused upstream commands, tests
-and generated outputs are omitted; the root Makefile builds only `build/IC`.
-The generator was not authored as part of this project.
+in [LICENSE](vendor/matroid-generator/LICENSE). The included source supports the
+`build/IC` target used by the root Makefile.
 
 ## Sparse-paving implementation
 
@@ -18,14 +17,13 @@ The generator was not authored as part of this project.
 `burnside_sparse.cpp` originate in the supplied `matroid_fast_algorithms.zip`.
 They have been formatted for readability. The persistent sparse-paving runner
 was developed during this computation and now shares CPU discovery with the
-general worker runner. No licensing grant beyond the supplied source is implied.
+general worker runner.
 
 ## Downloaded tools
 
 - [Ganak v2.6.4](https://github.com/meelgroup/ganak): exact model counting. The
   Linux x86-64 archive and executable are checksum-pinned in
-  [`scripts/setup.py`](scripts/setup.py). The executable is downloaded locally,
-  not committed to this repository.
+  [`scripts/setup.py`](scripts/setup.py) and downloaded into `deps/`.
 - [Nauty 2.9.3](https://users.cecs.anu.edu.au/~bdm/nauty/): independent canonical
   labeling and automorphism checks, Apache-2.0. Its source archive is
   checksum-pinned, downloaded into `deps/` and built with thread-local storage.
@@ -35,7 +33,6 @@ general worker runner. No licensing grant beyond the supplied source is implied.
 
 ## Reference data
 
-The [Mayhew–Royle catalogue](https://zenodo.org/records/6825419) is used only for
-the optional independent comparison. It is neither bundled nor read by the
-production counter. The source of each published benchmark is documented in
+The [Mayhew–Royle catalogue](https://zenodo.org/records/6825419) supplies the
+optional external comparison. Published benchmark sources are listed in
 [`docs/validation.md`](docs/validation.md).

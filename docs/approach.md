@@ -1,9 +1,10 @@
 # How the count works
 
-The task began with a faster generator for rank-four **sparse-paving** matroids
-on nine elements. That class is only part of all matroids. The final pipeline
-keeps its efficient graph-counting kernel and adds general matroid extensions,
-then corrects for symmetry without constructing the ten-element objects.
+The pipeline counts ten-element matroids by aggregating extensions of smaller
+matroids. Sparse-paving extensions use an independent-set counter; general
+extensions use modular cuts and the same graph-counting kernel. Burnside's
+lemma combines counts of matroids fixed by each permutation type to obtain
+isomorphism-class counts.
 
 The scope is rank-specific matroids on a fixed ground set, with no assumptions
 of simplicity, connectedness or representability. Unlabeled counts use the
@@ -29,8 +30,8 @@ flowchart TD
 
 The pinned [IC generator](https://github.com/gmou3/matroid-generator) recursively
 constructs single-element extensions using linear subclasses and accepts
-canonical basis representations. It starts at the trivial matroids and reads
-no catalogue. We generate ranks through half the ground-set size and obtain the
+canonical basis representations. Starting from the trivial matroids, we
+generate ranks through half the ground-set size and obtain the
 other ranks by duality. A subset dynamic program converts the basis encoding
 into the rank of every subset.
 
@@ -124,7 +125,7 @@ cocircuit, respectively.
 The lower-flat branching tracks whether a bad event has occurred. At a graph
 leaf, any remaining bad hyperplanes are handled by disjoint first-true
 branches. The all-bad-false family is omitted. This counts paving but
-non-sparse-paving extensions too, rather than only non-paving extensions.
+non-sparse-paving extensions as well as non-paving extensions.
 
 ## 5. Recover unpointed counts with Burnside's lemma
 
@@ -191,7 +192,7 @@ partitions of the ground set plus a marker for the loop class.
 
 Compute ranks three, four and five using the extension pipeline, obtain ranks
 six through ten by duality, and sum. All arithmetic used in the final moments
-and sums is exact integer arithmetic. No published rank total is substituted.
+and sums is exact integer arithmetic.
 
 ## Mathematical references
 

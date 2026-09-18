@@ -17,8 +17,8 @@ make test
 ```
 
 The setup script downloads Ganak v2.6.4 and, with `--audit`, nauty 2.9.3. Both
-downloads are pinned by checksums. The parent generator is already present as
-source under `vendor/`. No matroid data is downloaded by these commands.
+downloads are pinned by checksums. The parent generator is included as source
+under `vendor/`.
 
 `make test` takes seconds on the reference machine. It generates small parents,
 audits rank functions and isomorphism classes, reproduces three full matroid
@@ -47,15 +47,13 @@ the smaller of eight and that number. On the 64-core reference machine we used
 1 GiB, so account for memory as well as CPUs when selecting the worker count.
 Generated catalogues, CNF files and checkpoints require several GiB of disk.
 
-The script generates all parents through nine elements and computes every
-ten-element summand. It writes `total.json` only after successful completion.
-Ranks six through ten are obtained by duality from the computed lower ranks;
-duality does not identify distinct isomorphism classes in the final sum.
+The script generates all parents through nine elements and computes the
+ten-element totals. Ranks six through ten follow by duality. The completed
+result is written to `total.json`.
 
-The original complete run used 64 physical cores on two AMD EPYC 9354 CPUs and
-took 386.18 seconds, excluding builds and development. Its forecast was
-5–9 minutes. This is a measurement on one machine, not a performance guarantee
-for other hardware. The repository's own verification run is recorded in
+The repository verification run took 389.16 seconds on 64 physical cores across
+two AMD EPYC 9354 CPUs, within its 6–9 minute forecast. This measures the full
+calculation after compilation. Hardware, timings and checksums are recorded in
 [`results/provenance.json`](../results/provenance.json).
 
 ## Monitor and resume
@@ -86,8 +84,13 @@ writer locks; do not launch two orchestrators in the same work directory.
 
 Use a new work directory after changing an input or rebuilding a counting
 binary. Checkpoint manifests intentionally reject changed producers or inputs.
-A timeout or missing subproblem never becomes a completed count. There is no
-wall-time shortcut that substitutes an estimate for an exact result.
+The final reduction requires every subproblem to complete.
+
+## Generated files
+
+The selected work directory holds parent catalogues, checkpoint ledgers, formula
+files and solver logs. The `runs/`, `build/` and `deps/` directories are ignored
+by Git. Compact completed-run summaries are kept in [`results/`](../results/).
 
 ## Independently audit the generated input
 
@@ -110,8 +113,7 @@ python3 scripts/validate.py --parents runs/n10/parents \
 
 This checks all 55 known size/rank cells through nine elements, runs six
 separate aggregate-counting benchmarks through nine elements, and compares the
-computed ten-element ranks zero through four with published values. Expected
-values occur in the validation script, not in the final summation.
+computed ten-element ranks zero through four with published values.
 
 ## Optional comparison with Zenodo
 
@@ -125,8 +127,7 @@ python3 scripts/compare_catalogues.py \
   --out runs/n10/catalogue_comparison.json
 ```
 
-The comparison uses the full canonical rank strings. Equal hashes or matching
-totals alone are not accepted as evidence that the class sets agree.
+The comparison checks equality of the complete sets of canonical rank strings.
 
 ## Smaller or individual stages
 

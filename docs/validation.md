@@ -1,9 +1,8 @@
-# Evidence and limits
+# Validation
 
-The final pipeline was run from the empty matroid with no downloaded catalogue
-or supplied count as an input. Verification combines known-count benchmarks,
-an independently generated catalogue, a separate rank/isomorphism audit, and
-exact accounting of every required subproblem.
+Validation combines published benchmarks, a separate rank/isomorphism audit and
+checks of every counting subproblem. Full rank-five reruns currently use the
+same counting implementation.
 
 ## Known values
 
@@ -28,10 +27,9 @@ generator:
 The ten-element benchmarks appear in Table 1 of
 [Joswig–Schröter](https://doi.org/10.1016/j.jcta.2017.05.001), with the rank-four
 enumeration attributed to Matsumoto–Moriyama–Imai–Bremner. The rank-zero,
-rank-one and rank-two formulas were checked too. None of those published
-values supplies a term of the production answer.
+rank-one and rank-two formulas were checked too.
 
-## Verify the actual catalogue, not just its size
+## Catalogue checks
 
 Independent generation produced all 385,370 classes from zero through nine
 elements. Comparing full canonical rank arrays against the
@@ -49,10 +47,9 @@ For every entry, the independent C++ audit checks:
 - Dual closure of the complete class set.
 
 Local submodularity gives diminishing returns along every inclusion chain and
-therefore full submodularity. This is an exhaustive equivalent test of the rank
-axioms, not a random subset of them. For each catalogue the original rank arrays
-receive 196,672,421 bound checks, 884,753,266 increment checks and
-1,768,978,636 submodular-square checks; the dual arrays receive the same tests.
+therefore full submodularity. The audit exhaustively checks these equivalent
+rank axioms: 196,672,421 bounds, 884,753,266 increments and 1,768,978,636
+submodular squares per catalogue, with the same tests applied to the duals.
 
 Nauty also independently reproduced all 190,214 automorphism orders used in the
 original rank-five parent run. After replacing the catalogue with independently
@@ -75,15 +72,3 @@ Small tests additionally compare the non-sparse-paving moment calculation with
 the difference between independently computed full and sparse-paving fixed
 counts. They exercise the paired coloop term, resumption of completed parent
 jobs, invalid rank-array rejection and isomorphic-duplicate rejection.
-
-## What this does not establish
-
-The full ten-element rank-five computation has not been repeated using a second
-independent counting implementation. Regenerating its inputs, changing their
-labels and checking known cases provide substantial validation, but do not
-replace that independent replication or constitute a formal proof of the
-software. No claim of external review of the new total is made.
-
-Only compact result summaries are committed. Full parent ledgers, formula files
-and solver logs are generated under `runs/` when reproducing the calculation;
-they are not mixed into the source tree.
