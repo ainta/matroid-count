@@ -46,7 +46,7 @@ Code: [`generate_parents.py`](../scripts/generate_parents.py),
 
 ## 2. Count sparse paving with independent sets
 
-A rank-$r$ sparse-paving matroid is specified by its circuit-hyperplanes, which
+A rank-$`r`$ sparse-paving matroid is specified by its circuit-hyperplanes, which
 form a stable set of the Johnson graph $J(n,r)$. Its vertices are $r$-subsets;
 two are adjacent when their intersection has size $r-1$.
 
@@ -55,11 +55,11 @@ $e$ removed, and let $B$ be the blocks not containing $e$. Then $A$ is stable in
 $J(n-1,r-1)$, and $B$ is stable in $J(n-1,r)$ with the supersets of $A$ excluded.
 Writing $i(G)$ for the number of stable sets, including the empty set, gives
 
-$$
+```math
 I(n,r)=\sum_{[A]}\frac{(n-1)!}{|\operatorname{Aut}(A)|}
  i\bigl(J(n-1,r)-\Gamma^+(A)\bigr),
 \qquad \Gamma^+(A)=\{b:\exists a\in A,\ a\subset b\}.
-$$
+```
 
 Each parent contributes an exact number of labeled extensions. The independent-
 set engine uses include/exclude branching, isolated vertices, connected
@@ -82,7 +82,7 @@ Code: [`augment_sparse.cpp`](../src/augment_sparse.cpp),
 
 ## 3. General matroids: count modular cuts
 
-For a rank-$r$ parent $N$, introduce a Boolean variable $x_F$ for every flat.
+For a rank-$`r`$ parent $N$, introduce a Boolean variable $x_F$ for every flat.
 The meaning is that the new element belongs to the closure of $F$. A nonempty
 modular cut satisfies
 
@@ -139,9 +139,9 @@ For a partition $\mu\vdash n-1$, let
 $$z_\mu=\prod_j j^{a_j}a_j!.$$
 
 For general rank $r$, accumulate an integer moment $T_\mu$ over all
-rank-$r$ parents, weighting each parent by $(n-1)!/|\operatorname{Aut}(N)|$
+rank-$`r`$ parents, weighting each parent by $(n-1)!/|\operatorname{Aut}(N)|$
 and summing its invariant modular-cut counts over automorphisms of type $\mu$.
-Add the corresponding coloop contribution from rank-$(r-1)$ parents. Then
+Add the corresponding coloop contribution from rank-$`(r-1)`$ parents. Then
 
 $$F(\mu\cup(1))=\frac{z_\mu T_\mu}{(n-1)!}.$$
 
