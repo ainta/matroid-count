@@ -1,0 +1,9 @@
+/build/
+/deps/
+/data/
+/runs/
+/vendor/matroid-generator/build/
+__pycache__/
+*.pyc
+*.part
+.venv/

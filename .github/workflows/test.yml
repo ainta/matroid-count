@@ -1,0 +1,15 @@
+name: Known-count checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  small-cases:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y g++ make libboost-dev
+      - run: python3 scripts/setup.py --audit
+      - run: make -j2
+      - run: make audit
+      - run: make test

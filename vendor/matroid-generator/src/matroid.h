@@ -1,0 +1,61 @@
+#pragma once
+
+#include <bitset>
+#include <cstdint>
+#include <set>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+
+#include "combinatorics.h"
+
+using namespace std;
+
+class Matroid {
+   private:
+    mutable unordered_map<bitset<N>, uint16_t> rank_cache;
+    mutable unordered_map<bitset<N>, bitset<N>> closure_cache;
+
+   public:
+    uint16_t r;
+    uint16_t n;
+    string colex;
+    mutable set<bitset<N>, CoLexComparator<N>> ind_sets_rm1;
+    mutable vector<bitset<N>> hyperplanes;
+    mutable unordered_set<bitset<N>> taboo_hyperplanes;
+    mutable vector<bitset<N>> hyperlines;
+    mutable vector<vector<uint16_t>> planes_to_lines;
+    mutable vector<vector<uint16_t>> lines_to_planes;
+    mutable unordered_map<bitset<N>, uint16_t> hyperplanes_index;
+    mutable vector<vector<uint16_t>> hyperplanes_to_zeros;
+
+    Matroid(const uint16_t& r, const uint16_t& n, const string& colex)
+        : r(r), n(n), colex(colex) {}
+
+    uint16_t rank(const bitset<N>& F) const;
+    bitset<N> closure(const bitset<N>& F) const;
+    void init_ind_sets_rm1() const;
+    void init_hyperplanes() const;
+    void init_taboo_hyperplanes() const;
+    void init_hyperlines() const;
+
+    Matroid coloop_extension() const {
+        string colex(bnml, '0');
+        // C(n, r) = C(n - 1, r - 1) + C(n - 1, r)
+        for (uint16_t i = 0; i < bnml_nm1_rm1; ++i) {
+            colex[bnml_nm1 + i] = this->colex[i];
+        }
+        return Matroid(this->r + 1, this->n + 1, colex);
+    }
+
+    template <typename F>
+    void canonical_extensions(F on_extension) const;
+};
+
+#include "extension.h"  // here in order to avoid circular dependencies
+
+template <typename F>
+void Matroid::canonical_extensions(F on_extension) const {
+    return get_canonical_extensions(*this, on_extension);
+}
