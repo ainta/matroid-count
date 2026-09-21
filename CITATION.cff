@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the archived release."
+type: software
+title: "Counting all matroids on ten elements"
+authors:
+  - family-names: Jo
+    given-names: Sunghyeon
+version: 1.0.0
+date-released: 2026-09-21
+repository-code: "https://github.com/ainta/matroid-count"
+url: "https://github.com/ainta/matroid-count/releases/tag/v1.0.0"
+license: GPL-3.0-only
+abstract: >-
+  Exact counting code, an algorithm note with pseudocode and correctness proofs,
+  and reproducible results for all matroids on ten elements at every rank.
+  The totals are 3,232,000,741,644 unlabeled matroids and
+  11,727,995,799,397,397,461 labeled matroids. Software is licensed under
+  GPL-3.0-only; original documentation and recorded results are licensed
+  separately under CC-BY-4.0, as described in LICENSE-DOCS.md.
+keywords:
+  - matroids
+  - enumeration
+  - exact counting
+  - reproducible computation

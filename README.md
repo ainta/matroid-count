@@ -14,6 +14,13 @@ The pipeline generates smaller parents from the empty matroid and counts their
 extensions in aggregate. Published counts and a reference catalogue provide
 validation checks.
 
+## Fixed release
+
+The [v1.0.0 release](https://github.com/ainta/matroid-count/releases/tag/v1.0.0)
+provides a fixed source archive, the
+[algorithm note PDF](https://github.com/ainta/matroid-count/releases/download/v1.0.0/matroid-count-n10-note.pdf),
+and SHA-256 checksums. Use this version for citation and reproduction.
+
 ## Start here
 
 - [Algorithm note (PDF)](docs/note.pdf) · [TeX source](docs/note.tex):
@@ -62,6 +69,10 @@ python3 scripts/status.py runs/n10
 | `vendor/matroid-generator/` | Pinned upstream parent-generator source and license |
 
 See [third-party attribution](THIRD_PARTY.md) for the upstream code and tools used.
+
+Software is licensed under [GPL-3.0-only](LICENSE). Original documentation,
+the algorithm note, and recorded results are licensed under
+[CC-BY-4.0](LICENSE-DOCS.md). Third-party material retains its existing licenses.
 
 To check the arithmetic of the recorded results with Python alone:
 
