@@ -51,6 +51,17 @@ The script generates all parents through nine elements and computes the
 ten-element totals. Ranks six through ten follow by duality. The completed
 result is written to `total.json`.
 
+Compare the completed run with the recorded totals and all fixed counts:
+
+```bash
+python3 scripts/verify_results.py --run runs/n10
+```
+
+The [validation guide](validation.md) displays the rank totals, all 42 rank-five
+Burnside terms and the published benchmarks. To check the arithmetic of the
+recorded results without running the counting programs, use
+`python3 scripts/verify_results.py`.
+
 The repository verification run took 389.16 seconds on 64 physical cores across
 two AMD EPYC 9354 CPUs, within its 6–9 minute forecast. This measures the full
 calculation after compilation. Hardware, timings and checksums are recorded in

@@ -30,4 +30,8 @@ audit: build/rank_audit
 test: all audit
 	$(PYTHON) tests/smoke.py
 
-.PHONY: all audit test
+verify:
+	$(PYTHON) scripts/verify_results.py --check-table docs/validation.md
+	$(PYTHON) tests/verify_results.py
+
+.PHONY: all audit test verify

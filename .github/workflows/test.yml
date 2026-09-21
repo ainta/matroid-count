@@ -8,6 +8,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+      - run: make verify
       - run: sudo apt-get update && sudo apt-get install -y g++ make libboost-dev
       - run: python3 scripts/setup.py --audit
       - run: make -j2

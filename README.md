@@ -22,7 +22,8 @@ validation checks.
   symmetry correction and why the count includes all matroids.
 - [Reproduction and monitoring](docs/reproduction.md): dependencies, commands,
   checkpoints, optional catalogue comparison and resource use.
-- [Validation](docs/validation.md): published benchmarks and catalogue checks.
+- [Verify the result](docs/validation.md): published comparisons, rank totals,
+  all 42 rank-five Burnside terms and commands to reproduce them.
 - [Machine-readable results](results/): totals, fixed-permutation counts,
   validation evidence and provenance.
 
@@ -61,3 +62,13 @@ python3 scripts/status.py runs/n10
 | `vendor/matroid-generator/` | Pinned upstream parent-generator source and license |
 
 See [third-party attribution](THIRD_PARTY.md) for the upstream code and tools used.
+
+To check the arithmetic of the recorded results with Python alone:
+
+```bash
+python3 scripts/verify_results.py
+```
+
+This checks all rank totals, the sparse/non-sparse partition and the Burnside
+sums. The [validation guide](docs/validation.md#recompute-and-compare) also shows
+how to regenerate the counts and compare a completed run.
