@@ -1,5 +1,7 @@
 # Counting all matroids on ten elements
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22881837.svg)](https://doi.org/10.5281/zenodo.22881837)
+
 An exact, parallel counting pipeline for **all matroids on ten elements**, at
 every rank, including loops, parallel elements, coloops and disconnected
 matroids. Isomorphism means relabeling the ground set; distinct dual matroids
@@ -20,6 +22,11 @@ The [v1.0.0 release](https://github.com/ainta/matroid-count/releases/tag/v1.0.0)
 provides a fixed source archive, the
 [algorithm note PDF](https://github.com/ainta/matroid-count/releases/download/v1.0.0/matroid-count-n10-note.pdf),
 and SHA-256 checksums. Use this version for citation and reproduction.
+The source, note, and recorded results are also archived on
+[Zenodo (DOI: 10.5281/zenodo.22881837)](https://doi.org/10.5281/zenodo.22881837).
+
+Suggested citation: Jo, Sunghyeon (2026). *Counting all matroids on ten elements*
+(version 1.0.0). Zenodo. https://doi.org/10.5281/zenodo.22881837
 
 ## Start here
 

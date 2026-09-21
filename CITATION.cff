@@ -6,6 +6,7 @@ authors:
   - family-names: Jo
     given-names: Sunghyeon
 version: 1.0.0
+doi: 10.5281/zenodo.22881837
 date-released: 2026-09-21
 repository-code: "https://github.com/ainta/matroid-count"
 url: "https://github.com/ainta/matroid-count/releases/tag/v1.0.0"
