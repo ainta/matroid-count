@@ -16,6 +16,10 @@ The pipeline generates smaller parents from the empty matroid and counts their
 extensions in aggregate. Published counts and a reference catalogue provide
 validation checks.
 
+GPT-6 Astra helped discover and implement the optimized counting algorithms.
+Sunghyeon Jo read the source code and mathematical proofs and verified the
+correctness of the algorithms and their implementation.
+
 ## Fixed release
 
 The [v1.0.0 release](https://github.com/ainta/matroid-count/releases/tag/v1.0.0)
