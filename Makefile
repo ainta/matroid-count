@@ -1,22 +1,17 @@
 CXX ?= g++
 CXXFLAGS ?= -O3 -march=native -std=c++17
 PYTHON ?= python3
-PROGRAMS = augment_sparse split_count burnside_sparse extension_worker sparse_terms colex_to_rank compact_worker
-BINARIES = $(addprefix build/,$(PROGRAMS))
-KERNEL = src/split_count.cpp src/small_extensions.hpp
 
-all: $(BINARIES) vendor/matroid-generator/build/IC
+all: build/count_extensions build/colex_to_rank vendor/matroid-generator/build/IC
 
 build:
 	mkdir -p $@
 
-build/%: src/%.cpp | build
+build/count_extensions: src/count_extensions.cpp | build
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-build/compact_worker: simple/worker.cpp | build
+build/colex_to_rank: src/colex_to_rank.cpp | build
 	$(CXX) $(CXXFLAGS) $< -o $@
-
-build/split_count build/burnside_sparse build/extension_worker build/sparse_terms: $(KERNEL)
 
 vendor/matroid-generator/build/IC: $(wildcard vendor/matroid-generator/src/*)
 	$(MAKE) -C vendor/matroid-generator build/IC
@@ -34,7 +29,6 @@ test: all audit
 	$(PYTHON) tests/smoke.py
 
 verify:
-	$(PYTHON) scripts/verify_results.py --check-table docs/validation.md
-	$(PYTHON) tests/verify_results.py
+	$(PYTHON) scripts/verify_results.py
 
 .PHONY: all audit test verify

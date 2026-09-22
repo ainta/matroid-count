@@ -46,6 +46,7 @@ def main():
         "axiom_checks": json.loads((a.out / "axioms.json").read_text()),
         "counts": dict(counts),
         "ranklines_sha256": hashlib.sha256(a.ranklines.read_bytes()).hexdigest(),
+        "canonical_sha256": hashlib.sha256(table.read_bytes()).hexdigest(),
         "seconds": time.perf_counter() - start,
     }
     (a.out / "audit.json").write_text(json.dumps(result, indent=2) + "\n")

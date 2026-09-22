@@ -1,171 +1,83 @@
-# Reproduce, monitor and verify
+# Reproduce the count
 
-Run commands from the repository root. The implementation supports Linux
-x86-64, Python 3.10 or newer, GCC with OpenMP, Make and Boost.Multiprecision
-headers. No Python packages are required.
+Run these commands from the repository root on Linux x86-64. You need
+Python 3.10 or newer, GCC with C++17 support, Make, and Boost headers.
+On Ubuntu, install g++, make, libboost-dev, and python3.
 
-## Build
+## Build and test
 
-On Ubuntu:
-
-```bash
-sudo apt-get install g++ make libboost-dev python3
+~~~bash
 python3 scripts/setup.py --audit
 make -j4
 make audit
 make test
-```
+make verify
+~~~
 
-The setup script downloads Ganak v2.6.4 and, with `--audit`, nauty 2.9.3. Both
-downloads are pinned by checksums. The parent generator is included as source
-under `vendor/`.
+The setup script downloads checksum-pinned Ganak for exact model counting.
+The optional audit target also downloads nauty. The nine-element parent
+generator is included as pinned source under vendor/.
 
-`make test` takes seconds on the reference machine. It generates small parents,
-audits rank functions and isomorphism classes, reproduces three full matroid
-counts, checks the sparse/non-sparse split, exercises resumption and confirms
-that invalid inputs are rejected. GitHub Actions runs the same suite.
+The default C++ flags include -march=native. Build on the machine that
+will run the program. The test suite generates parents through eight
+elements, audits their rank functions and isomorphism classes, and
+reproduces four published rank counts.
 
-The default compiler flags include `-march=native`. Build on the machine where
-you will run the program. For portable binaries, override the flags:
+## Count ten-element matroids
 
-```bash
-make CXXFLAGS='-O3 -std=c++17'
-```
+~~~bash
+python3 scripts/generate_parents.py --through 9 --jobs 64 \
+    --out runs/n10/parents
+python3 -S scripts/count.py --parents runs/n10/parents \
+    --workdir runs/n10/count --jobs 64
+python3 scripts/verify_results.py --run runs/n10/count
+~~~
 
-Use a fresh checkout or remove the relevant build outputs when changing flags;
-Make does not track compiler options as dependencies.
+Set --jobs to the number of available physical cores. The generator
+creates the nine-element parents from the empty matroid. The counter
+uses the same modular-cut worker for all parents and runs exact model
+counting for the cycle types without a fixed point. It writes the total
+to runs/n10/count/result.json and the fixed counts to each
+rank*/result.json. The verifier compares all 126 fixed counts, the rank
+totals, and the final count with the recorded results.
 
-## Full count
+The counter prints parent progress to standard error. The generated
+rank files, formulas, and solver input remain under runs/, which Git
+ignores. An unfinished subproblem stops the run with an error. This
+short driver does not checkpoint individual parents; restart the
+counting command after a failure.
 
-```bash
-python3 scripts/count.py --workdir runs/n10 --jobs 8 --seconds 180
-```
+The recorded 64-worker run took about ten minutes after parent
+generation on two AMD EPYC 9354 CPUs. Parent generation took about
+four seconds. Actual time depends on CPU speed and the exact model
+counter. Each exact model-counting process can use up to 1 GiB of cache.
 
-Set `--jobs` to at most the number of available physical cores. The default is
-the smaller of eight and that number. On the 64-core reference machine we used
-`--jobs 64`. Each exact model-counting process has a configured cache limit of
-1 GiB, so account for memory as well as CPUs when selecting the worker count.
-Generated catalogues, CNF files and checkpoints require several GiB of disk.
+## Audit the generated parents
 
-The script generates all parents through nine elements and computes the
-ten-element totals. Ranks six through ten follow by duality. The completed
-result is written to `total.json`.
+The counting command does not require a downloaded catalogue. To check
+the generated parents independently with nauty, run:
 
-Compare the completed run with the recorded totals and all fixed counts:
-
-```bash
-python3 scripts/verify_results.py --run runs/n10
-```
-
-The [validation guide](validation.md) displays the rank totals, all 42 rank-five
-Burnside terms and the published benchmarks. To check the arithmetic of the
-recorded results without running the counting programs, use
-`python3 scripts/verify_results.py`.
-
-The repository verification run took 389.16 seconds on 64 physical cores across
-two AMD EPYC 9354 CPUs, within its 6–9 minute forecast. This measures the full
-calculation after compilation. Hardware, timings and checksums are recorded in
-[`results/provenance.json`](../results/provenance.json).
-
-## Monitor and resume
-
-```bash
-python3 scripts/status.py runs/n10
-```
-
-The status command is read-only. It shows parent completion counts, completed
-SAT jobs and finished rank totals. Useful files are:
-
-| Path under the work directory | Contents |
-|---|---|
-| `parents/generation.json` | Generator identity, output sizes and checksums |
-| `sparse10/progress.json` | Sparse-paving subproblem progress |
-| `rank*/parents/progress.json` | General parent progress, updated at job boundaries |
-| `rank*/parents/parents.jsonl` | Completed parent moments and attempted jobs |
-| `rank*/sat/` | Direct symmetry results and exact solver logs |
-| `rank*/cubes_*/results/` | Results and logs for the partitioned symmetry cases |
-| `rank*/result.json` | Full Burnside terms and totals for that rank |
-| `total.json` | Final totals for every rank and all ranks combined |
-
-Run the same command with the same work directory to resume. Completed parent
-and SAT jobs are reused after provenance checks. Increase `--seconds` if an
-individual job times out. The C++ limits are checked periodically, so they are
-not strict wall-clock interruption bounds. Parent checkpoints have exclusive
-writer locks; do not launch two orchestrators in the same work directory.
-
-Use a new work directory after changing an input or rebuilding a counting
-binary. Checkpoint manifests intentionally reject changed producers or inputs.
-The final reduction requires every subproblem to complete.
-
-## Generated files
-
-The selected work directory holds parent catalogues, checkpoint ledgers, formula
-files and solver logs. The `runs/`, `build/` and `deps/` directories are ignored
-by Git. Compact completed-run summaries are kept in [`results/`](../results/).
-
-## Independently audit the generated input
-
-```bash
+~~~bash
 python3 scripts/audit.py runs/n10/parents/all_ranklines.txt \
-  --out runs/n10/audit --jobs 8
-```
+    --out runs/n10/audit --jobs 64
+~~~
 
-The audit checks every rank array, duality, isomorphic duplicates and
-canonical-label invariance under relabeling. It uses nauty, independently of the
-counting worker's automorphism implementation. Its output includes exact
-canonical rank arrays in `canonical.tsv` for later comparisons.
+The audit tests rank axioms, detects isomorphic duplicates, checks
+duality, and records one canonical rank array per class. It should
+find 385,370 matroids through nine elements, including 383,172 with
+exactly nine elements.
 
-## Check published totals
+For an optional comparison with the complete public catalogue:
 
-```bash
-python3 scripts/validate.py --parents runs/n10/parents \
-  --ten-run runs/n10 --out runs/n10/validation --jobs 8
-```
-
-This checks all 55 known size/rank cells through nine elements, runs six
-separate aggregate-counting benchmarks through nine elements, and compares the
-computed ten-element ranks zero through four with published values.
-
-## Optional comparison with Zenodo
-
-This download is needed only for an external reference comparison:
-
-```bash
+~~~bash
 python3 scripts/setup.py --catalogue
-./build/rank_audit data/matroids09_rankLine runs/reference.tsv 8
+./build/rank_audit data/matroids09_rankLine runs/n10/reference.tsv 64
 python3 scripts/compare_catalogues.py \
-  --generated runs/n10/audit/canonical.tsv --reference runs/reference.tsv \
-  --out runs/n10/catalogue_comparison.json
-```
+    --generated runs/n10/audit/canonical.tsv \
+    --reference runs/n10/reference.tsv \
+    --out runs/n10/catalogue-comparison.json
+~~~
 
-The comparison checks equality of the complete sets of canonical rank strings.
-
-## Build the algorithm note
-
-The [note](note.pdf) is written in a single [TeX source](note.tex). With a
-LaTeX installation providing pdfLaTeX, run from the repository root:
-
-```bash
-mkdir -p build/note
-pdflatex -interaction=nonstopmode -halt-on-error -output-directory=build/note docs/note.tex
-pdflatex -interaction=nonstopmode -halt-on-error -output-directory=build/note docs/note.tex
-cp build/note/note.pdf docs/note.pdf
-```
-
-## Smaller or individual stages
-
-Generate a parent catalogue independently:
-
-```bash
-python3 scripts/generate_parents.py --through 9 --jobs 8 --out runs/parents
-```
-
-Run only the nine-element sparse-paving count:
-
-```bash
-python3 scripts/count_sparse.py 9 4 --jobs 8 --workdir runs/sparse9
-```
-
-The C++ worker's persistent stdin protocol is used by `run_parents.py`: one rank
-array in, one JSON result out. The lower-level scripts expose `--help`; normal
-reproduction should use `count.py` so that symmetry and coloop terms are included.
+This comparison checks the complete canonical rank arrays and
+automorphism orders. The reference catalogue is not an input to the
+counting command.

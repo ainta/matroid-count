@@ -1,7 +1,6 @@
 # Sources and attribution
 
-This repository combines new orchestration, modular-cut counting, symmetry
-accounting and audit code with the following earlier implementations.
+The counting route uses the following third-party code and data.
 
 ## Parent generator
 
@@ -10,14 +9,6 @@ changes from [gmou3/matroid-generator](https://github.com/gmou3/matroid-generato
 commit `60645ae024e831fba3ebd35b2388515b0304140a`. Its GPL-3.0 license is retained
 in [LICENSE](vendor/matroid-generator/LICENSE). The included source supports the
 `build/IC` target used by the root Makefile.
-
-## Sparse-paving implementation
-
-`augment_sparse.cpp`, `split_count.cpp`, `small_extensions.hpp` and
-`burnside_sparse.cpp` originate in the supplied `matroid_fast_algorithms.zip`.
-They have been formatted for readability. The persistent sparse-paving runner
-was developed during this computation and now shares CPU discovery with the
-general worker runner.
 
 ## Downloaded tools
 

@@ -1,9 +1,7 @@
 {
-  "status": "complete",
   "n": 10,
-  "scope": "all matroids, including loops, parallel elements, coloops and disconnected matroids",
-  "all_unlabeled": "3232000741644",
-  "all_labeled": "11727995799397397461",
+  "unlabeled": "3232000741644",
+  "labeled": "11727995799397397461",
   "by_rank": {
     "0": {
       "unlabeled": "1",
@@ -49,9 +47,5 @@
       "unlabeled": "1",
       "labeled": "1"
     }
-  },
-  "rank5_partition": {
-    "sparse_unlabeled": "2630337889305",
-    "nonsp_unlabeled": "591890070139"
   }
 }

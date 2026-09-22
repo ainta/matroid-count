@@ -431,7 +431,7 @@ struct CutCounter {
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        cerr << "usage: compact_worker all|coloop [seconds_per_class=60] [cache=32768] [paired_coloop=0]\n";
+        cerr << "usage: count_extensions all|coloop [seconds_per_class=60] [cache=32768] [paired_coloop=0]\n";
         return 2;
     }
     string mode = argv[1];

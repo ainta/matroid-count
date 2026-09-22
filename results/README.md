@@ -1,17 +1,23 @@
-# Completed computation
+# Recorded count
 
-These files record the completed calculation:
+The count files use the same layout as a completed scripts/count.py run.
+The other files record checks of the parent input.
 
 | File | Contents |
 |---|---|
-| [`counts.json`](counts.json) | Labeled and unlabeled totals at every rank, plus the rank-five sparse/non-sparse split |
-| [`fixed_terms.json`](fixed_terms.json) | All 42 fixed-permutation counts for each of ranks three, four and five; rank-five non-sparse terms |
-| [`validation.json`](validation.json) | Published benchmarks, independent catalogue checks and agreement with the earlier full run |
-| [`provenance.json`](provenance.json) | Commands, machine/compiler information, timings and source/binary checksums |
+| [result.json](result.json) | Labeled and unlabeled totals at every rank |
+| [rank3/result.json](rank3/result.json) | Rank-three total and 42 fixed-permutation counts |
+| [rank4/result.json](rank4/result.json) | Rank-four total and 42 fixed-permutation counts |
+| [rank5/result.json](rank5/result.json) | Rank-five total and 42 fixed-permutation counts |
+| [generation.json](generation.json) | Generator identity and hashes of the parent files |
+| [audit.json](audit.json) | Independent checks of rank axioms, uniqueness, and duality |
+| [catalogue-comparison.json](catalogue-comparison.json) | Full canonical comparison with the public catalogue |
 
-Large integer counts are stored as decimal strings to preserve precision.
-A cycle type such as `1.1.2.2.4` denotes a partition of ten; ten `1`s give the
-identity permutation and therefore the labeled count.
+Counts are decimal strings. A key such as 1.1.2.2.4 gives the lengths of
+the permutation cycles. Ten 1s describe the identity permutation, so
+that entry is the labeled count.
 
-Follow [the reproduction instructions](../docs/reproduction.md) to rebuild the
-calculation and its full logs.
+Run make verify to recompute the Burnside sums and check ranks and totals.
+To compare a new run with every recorded fixed count, run
+scripts/verify_results.py with --run. The [reproduction guide](../docs/reproduction.md)
+gives the complete commands.
