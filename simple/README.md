@@ -19,7 +19,7 @@ python3 -S simple/count.py --parents runs/simple/parents \
 ```
 
 The answer is written to `runs/simple/count/result.json`:
-**3,232,000,741,644** unlabeled and **11,727,995,799,397,397,461** labeled
+3,232,000,741,644 unlabeled and 11,727,995,799,397,397,461 labeled
 matroids, across all ranks. Each `rank*/result.json` also contains its 42
 fixed-permutation counts. The completed run from generated parents took about
 ten minutes with 64 workers on two AMD EPYC 9354 processors.
