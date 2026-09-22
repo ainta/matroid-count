@@ -32,6 +32,8 @@ Suggested citation: Jo, Sunghyeon (2026). *Counting all matroids on ten elements
 
 - [Algorithm note (PDF)](docs/note.pdf) · [TeX source](docs/note.tex):
   pseudocode, correctness proofs and computation results.
+- [Simple counting route](simple/README.md): one extension worker and one
+  driver, using the shared parent generator and exact model counter.
 - [The algorithm](docs/approach.md): the sparse-paving split, modular cuts,
   symmetry correction and why the count includes all matroids.
 - [Reproduction and monitoring](docs/reproduction.md): dependencies, commands,

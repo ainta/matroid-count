@@ -1,7 +1,7 @@
 CXX ?= g++
 CXXFLAGS ?= -O3 -march=native -std=c++17
 PYTHON ?= python3
-PROGRAMS = augment_sparse split_count burnside_sparse extension_worker sparse_terms colex_to_rank
+PROGRAMS = augment_sparse split_count burnside_sparse extension_worker sparse_terms colex_to_rank compact_worker
 BINARIES = $(addprefix build/,$(PROGRAMS))
 KERNEL = src/split_count.cpp src/small_extensions.hpp
 
@@ -11,6 +11,9 @@ build:
 	mkdir -p $@
 
 build/%: src/%.cpp | build
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+build/compact_worker: simple/worker.cpp | build
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 build/split_count build/burnside_sparse build/extension_worker build/sparse_terms: $(KERNEL)

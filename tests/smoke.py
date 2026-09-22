@@ -56,6 +56,16 @@ def main():
             report = count_rank(n, rank, parents, work / f"count{n}", jobs, 60)
             assert int(report["unlabeled"]) == expected, report
             reports[n] = report
+            compact_work = work / f"compact{n}"
+            run(
+                sys.executable, "-S", "simple/count.py",
+                "--n", n, "--rank", rank, "--parents", parents,
+                "--workdir", compact_work, "--jobs", jobs,
+            )
+            compact = json.loads(
+                (compact_work / f"rank{rank}/result.json").read_text()
+            )
+            assert compact["fixed_terms"] == report["fixed_terms"]
 
         # Repeat an already completed parent stage; require exact resumption.
         parent_moments(
@@ -125,7 +135,8 @@ def main():
         assert check.returncode != 0 and "Isomorphic duplicate" in check.stderr
     print(
         "Passed: generation, rank axioms, isomorphism audit, known counts, "
-        "sparse/non-sparse fixed counts, resumption and rejection controls."
+        "compact/general fixed counts, sparse/non-sparse fixed counts, "
+        "resumption and rejection controls."
     )
 
 
