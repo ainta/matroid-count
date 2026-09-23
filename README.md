@@ -4,12 +4,10 @@ The number of matroids on ten elements up to isomorphism is
 **3,232,000,741,644**. The number with labeled elements is
 11,727,995,799,397,397,461.
 
+GPT-6 Astra helped discover and implement the optimized algorithms.
+
 The [blog post](https://ainta.github.io/2026-09-22-counting-all-matroids-on-ten-elements/)
-explains the algorithm. This repository contains the code, recorded counts,
-and tests needed to reproduce the calculation. It generates the nine-element
-matroids, counts their extensions as modular cuts, and uses Burnside's lemma
-to obtain the ten-element counts. Permutations without a fixed point use
-exact model counting of invariant basis families.
+explains the algorithm. This repository contains the codes for reproduction.
 
 ## Reproduce
 
@@ -50,6 +48,5 @@ Third-party sources and licenses are listed in [`THIRD_PARTY.md`](THIRD_PARTY.md
 Software is licensed under [GPL-3.0-only](LICENSE); original documentation
 and recorded results are licensed under [CC-BY-4.0](LICENSE-DOCS.md).
 
-GPT-6 Astra helped discover and implement the optimized algorithms.
 Sunghyeon Jo read the source code and mathematical proofs and verified
 the correctness of the algorithms and their implementation.
