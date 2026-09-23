@@ -25,5 +25,4 @@ in [LICENSE](vendor/matroid-generator/LICENSE). The included source supports the
 ## Reference data
 
 The [Mayhew–Royle catalogue](https://zenodo.org/records/6825419) supplies the
-optional external comparison. Published benchmark sources are listed in
-[`docs/validation.md`](docs/validation.md).
+optional external comparison. It is not used to produce the count.

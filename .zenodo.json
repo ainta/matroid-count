@@ -1,8 +1,8 @@
 {
   "title": "Counting all matroids on ten elements",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "upload_type": "software",
-  "description": "<p>Exact counting code, an algorithm note with pseudocode and correctness proofs, and reproducible results for all matroids on ten elements at every rank, including loops, parallel elements, coloops, and disconnected matroids.</p><p>The recorded totals are 3,232,000,741,644 unlabeled matroids and 11,727,995,799,397,397,461 labeled matroids. The validation guide includes published comparisons, rank totals, all 42 rank-five Burnside terms, and commands to reproduce and check the calculation.</p><p>Author: Sunghyeon Jo (GitHub: ainta). <a href=\"https://github.com/ainta/matroid-count/releases/tag/v1.0.0\">Fixed GitHub release</a>; <a href=\"https://github.com/ainta/matroid-count/releases/download/v1.0.0/matroid-count-n10-note.pdf\">algorithm note (PDF)</a>; <a href=\"https://github.com/ainta/matroid-count/blob/v1.0.0/docs/validation.md\">validation guide</a>.</p><p>Software is licensed under GPL-3.0-only. Original documentation and recorded results are licensed separately under CC-BY-4.0; see LICENSE-DOCS.md. Third-party material retains its existing licenses.</p>",
+  "description": "<p>Source code, recorded counts, and tests for an exact count of matroids on ten elements up to isomorphism. The result is 3,232,000,741,644 unlabeled matroids and 11,727,995,799,397,397,461 labeled matroids. The repository README gives the reproduction commands. The <a href=\"https://ainta.github.io/2026-09-22-counting-all-matroids-on-ten-elements/\">blog post</a> explains the algorithm.</p><p>GPT-6 Astra helped discover and implement the optimized algorithms. Sunghyeon Jo read the source code and mathematical proofs and verified the correctness of the algorithms and their implementation.</p>",
   "creators": [{"name": "Jo, Sunghyeon"}],
   "access_right": "open",
   "license": "gpl-3.0-only",

@@ -6,9 +6,8 @@ The original documentation and recorded results in this repository are licensed
 under the [Creative Commons Attribution 4.0 International License
 (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
 
-This applies to `README.md`, `THIRD_PARTY.md`, the contents of `docs/`
-(including the algorithm note PDF and TeX source), and the contents of
-`results/`. It also applies to the original descriptive metadata in
+This applies to `README.md`, `THIRD_PARTY.md`, and the contents of `results/`.
+It also applies to the original descriptive metadata in
 `CITATION.cff` and `.zenodo.json`.
 
 You may share and adapt this material, including for commercial purposes,

@@ -5,19 +5,16 @@ title: "Counting all matroids on ten elements"
 authors:
   - family-names: Jo
     given-names: Sunghyeon
-version: 1.0.0
-doi: 10.5281/zenodo.22881837
-date-released: 2026-09-21
+version: 2.0.0
+doi: 10.5281/zenodo.22881836
+date-released: 2026-09-23
 repository-code: "https://github.com/ainta/matroid-count"
-url: "https://github.com/ainta/matroid-count/releases/tag/v1.0.0"
+url: "https://github.com/ainta/matroid-count/releases/tag/v2.0.0"
 license: GPL-3.0-only
 abstract: >-
-  Exact counting code, an algorithm note with pseudocode and correctness proofs,
-  and reproducible results for all matroids on ten elements at every rank.
-  The totals are 3,232,000,741,644 unlabeled matroids and
-  11,727,995,799,397,397,461 labeled matroids. Software is licensed under
-  GPL-3.0-only; original documentation and recorded results are licensed
-  separately under CC-BY-4.0, as described in LICENSE-DOCS.md.
+  Code, recorded counts, and tests for counting all matroids on ten elements.
+  The totals are 3,232,000,741,644 up to isomorphism and
+  11,727,995,799,397,397,461 with labeled elements.
 keywords:
   - matroids
   - enumeration
